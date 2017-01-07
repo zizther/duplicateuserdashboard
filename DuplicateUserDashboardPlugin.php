@@ -92,9 +92,22 @@ class DuplicateUserDashboardPlugin extends BasePlugin
                     $widgetRecords = $controller->getUserWidgetRecords($userIdToDuplicate);
                     $widgetModels = WidgetModel::populateModels($widgetRecords);
 
-                    foreach($widgetModels as $widgetModel) {
-                      $widgetModel->id = NULL;
-                      craft()->dashboard->saveUserWidget($widgetModel);
+                    foreach ($widgetModels as $index => $widgetModel) {
+                        $widgetModel->id = null;
+                        craft()->dashboard->saveUserWidget($widgetModel);
+
+                        // get newly saved widget
+
+                        $widgetRecord = WidgetRecord::model()->findByAttributes(
+                            array(
+                                'sortOrder' => $index + 1,
+                                'userId'    => craft()->userSession->getUser()->id
+                            )
+                        );
+
+                        $attr = $widgetModel->getAttributes();
+                        craft()->dashboard->changeWidgetColspan($widgetRecord->id, $attr['colspan']);
+
                     }
 
                 }
